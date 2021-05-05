@@ -54,6 +54,7 @@ namespace TodoParser
 
             services.AddTransient<IHandler<ReadCommand>, ReadHandler>();
             services.AddTransient<IHandler<DeleteCommand>, DeleteHandler>();
+            services.AddTransient<IHandler<NextCommand>, NextHandler>();
 
             return services;
         }
@@ -72,6 +73,9 @@ namespace TodoParser
                     break;
                 case DeleteCommand delete:
                     provider.GetRequiredService<IHandler<DeleteCommand>>().Run(delete);
+                    break;
+                case NextCommand next:
+                    provider.GetRequiredService<IHandler<NextCommand>>().Run(next);
                     break;
                 default:
                     throw new Exception($"Unknown command type {command.GetType().FullName} sent to HandleCommand!");
