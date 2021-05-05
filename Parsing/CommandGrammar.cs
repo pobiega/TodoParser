@@ -1,0 +1,51 @@
+﻿using Sprache;
+using System.Linq;
+
+namespace TodoParser.Parsing
+{
+    public static class CommandGrammar
+    {
+        private static readonly Parser<string> _keywordAdd =
+            Parse.IgnoreCase("add").Text();
+
+        private static readonly Parser<string> _keywordDelete =
+            Parse.IgnoreCase("delete")
+            .Or(Parse.IgnoreCase("del"))
+            .Text();
+
+        private static readonly Parser<string> _keywordDone =
+            Parse.IgnoreCase("done").Text();
+
+        private static readonly Parser<int> _number =
+            Parse.Number.Select(s => int.Parse(s));
+
+        private static readonly Parser<Command> _readCommand =
+            from id in _number
+            select new ReadCommand(id);
+
+        private static readonly Parser<Command> _addCommand =
+            from keyword in _keywordAdd
+            from _ in Parse.WhiteSpace
+            from description in Parse.AnyChar.AtLeastOnce().Text()
+            select new AddCommand(description);
+
+        private static readonly Parser<Command> _deleteCommand =
+            from id in _number
+            from _ in Parse.WhiteSpace
+            from keyword in _keywordDelete
+            select new DeleteCommand(id);
+
+        private static readonly Parser<Command> _doneCommand =
+            from id in _number
+            from _ in Parse.WhiteSpace
+            from keyword in _keywordDone
+            select new DoneCommand(id);
+
+        public static readonly Parser<Command> Source =
+            _deleteCommand
+            .Or(_doneCommand)
+            .Or(_readCommand)
+            .Or(_addCommand)
+            .End();
+    }
+}
