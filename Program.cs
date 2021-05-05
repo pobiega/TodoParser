@@ -12,6 +12,7 @@ namespace TodoParser
 
         private static void Main()
         {
+            // Set up the DependencyInjection collection and provider
             var services = ConfigureServices();
             var provider = services.BuildServiceProvider();
 
@@ -61,11 +62,6 @@ namespace TodoParser
 
         private static void HandleCommand(ServiceProvider provider, Command command)
         {
-            // a (worse) alternative to DI would be...
-            //case ReadCommand read:
-            //        new ReadHandler().Run(read);
-            //break;
-
             switch (command)
             {
                 case ReadCommand read:
