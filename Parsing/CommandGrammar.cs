@@ -5,8 +5,6 @@ namespace TodoParser.Parsing
 {
     public static class CommandGrammar
     {
-       
-
         private static readonly Parser<string> _keywordAdd =
             Parse.IgnoreCase("add").Text();
 

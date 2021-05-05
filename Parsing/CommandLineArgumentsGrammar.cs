@@ -10,14 +10,14 @@ namespace TodoParser.Parsing
         private static readonly Parser<string> _doubleHyphen =
             Parse.Char('-').Repeat(2).Text();
 
-        private static readonly Parser<char> _dash =
+        private static readonly Parser<char> _hyphen =
             Parse.Char('-');
 
         private static readonly Parser<string> _i =
             Parse.IgnoreCase("i").Text();
 
-        private static readonly Parser<string> _dashI =
-            from dash in _dash
+        private static readonly Parser<string> _hyphenI =
+            from dash in _hyphen
             from i in _i
             select $"{dash}{i}";
 
@@ -28,6 +28,6 @@ namespace TodoParser.Parsing
 
         public static readonly Parser<string> Interactive =
             _interactive
-            .Or(_dashI);
+            .Or(_hyphenI);
     }
 }

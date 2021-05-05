@@ -19,11 +19,12 @@ namespace TodoParser
             var provider = services.BuildServiceProvider();
 
             var cmdline = string.Join(' ', args);
+
+            var userRequestedInteractive = CommandLineArgumentsGrammar.Interactive.TryParse(cmdline).WasSuccessful;
+
+            var runInteractive = INTERACTIVE_DEFAULT || userRequestedInteractive;
+
             var parser = CommandGrammar.Source;
-
-            var userRequestedInteractive = CommandLineArgumentsGrammar.Interactive.TryParse(cmdline);
-
-            var runInteractive = INTERACTIVE_DEFAULT || userRequestedInteractive.WasSuccessful;
 
             if (runInteractive)
             {
@@ -32,6 +33,8 @@ namespace TodoParser
             else
             {
                 var command = parser.Parse(cmdline);
+
+                Console.WriteLine(command);
 
                 HandleCommand(provider, command);
             }
@@ -84,16 +87,10 @@ namespace TodoParser
 
         private static void HandleCommand(ServiceProvider provider, Command command)
         {
-            // a (worse) alternative to DI would be...
-            //case ReadCommand read:
-            //        new ReadHandler().Run(read);
-            //break;
-
             switch (command)
             {
                 case ReadCommand read:
-                    var handler = provider.GetRequiredService<IHandler<ReadCommand>>();
-                    handler.Run(read);
+                    provider.GetRequiredService<IHandler<ReadCommand>>().Run(read);
                     break;
                 case DeleteCommand delete:
                     provider.GetRequiredService<IHandler<DeleteCommand>>().Run(delete);
