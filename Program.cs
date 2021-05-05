@@ -1,6 +1,8 @@
 ﻿using TodoParser.Parsing;
 using Sprache;
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using TodoParser.Handlers;
 
 namespace TodoParser
 {
@@ -10,6 +12,10 @@ namespace TodoParser
 
         private static void Main()
         {
+            // Set up the DependencyInjection collection and provider
+            var services = ConfigureServices();
+            var provider = services.BuildServiceProvider();
+
             var parser = CommandGrammar.Source;
 
             string line;
@@ -26,6 +32,9 @@ namespace TodoParser
 
                         Console.ForegroundColor = ConsoleColor.Cyan;
                         Console.WriteLine(result);
+
+                        Console.ResetColor();
+                        HandleCommand(provider, result);
                     }
                     catch (Exception ex)
                     {
@@ -38,6 +47,35 @@ namespace TodoParser
                 }
             }
             while (line != null);
+        }
+
+        private static IServiceCollection ConfigureServices()
+        {
+            var services = new ServiceCollection();
+
+            services.AddTransient<IHandler<ReadCommand>, ReadHandler>();
+            services.AddTransient<IHandler<DeleteCommand>, DeleteHandler>();
+            services.AddTransient<IHandler<NextCommand>, NextHandler>();
+
+            return services;
+        }
+
+        private static void HandleCommand(ServiceProvider provider, Command command)
+        {
+            switch (command)
+            {
+                case ReadCommand read:
+                    provider.GetRequiredService<IHandler<ReadCommand>>().Run(read);
+                    break;
+                case DeleteCommand delete:
+                    provider.GetRequiredService<IHandler<DeleteCommand>>().Run(delete);
+                    break;
+                case NextCommand next:
+                    provider.GetRequiredService<IHandler<NextCommand>>().Run(next);
+                    break;
+                default:
+                    throw new Exception($"Unknown command type {command.GetType().FullName} sent to HandleCommand!");
+            }
         }
     }
 }

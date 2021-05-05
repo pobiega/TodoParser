@@ -16,12 +16,19 @@ namespace TodoParser.Parsing
         private static readonly Parser<string> _keywordDone =
             Parse.IgnoreCase("done").Text();
 
+        private static readonly Parser<string> _keywordNext =
+            Parse.IgnoreCase("next").Text();
+
         private static readonly Parser<int> _number =
             Parse.Number.Select(s => int.Parse(s));
 
         private static readonly Parser<Command> _readCommand =
             from id in _number
             select new ReadCommand(id);
+
+        private static readonly Parser<Command> _nextCommand =
+            from keyword in _keywordNext
+            select new NextCommand();
 
         private static readonly Parser<Command> _addCommand =
             from keyword in _keywordAdd
@@ -43,6 +50,7 @@ namespace TodoParser.Parsing
 
         public static readonly Parser<Command> Source =
             _deleteCommand
+            .Or(_nextCommand)
             .Or(_doneCommand)
             .Or(_readCommand)
             .Or(_addCommand)
