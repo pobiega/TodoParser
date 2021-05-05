@@ -3,6 +3,7 @@ using Sprache;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using TodoParser.Handlers;
+using System.Linq;
 
 namespace TodoParser
 {
@@ -10,11 +11,34 @@ namespace TodoParser
     {
         const string PROMPT = "> ";
 
-        private static void Main()
+        const bool INTERACTIVE_DEFAULT = false;
+
+        private static void Main(string[] args)
         {
             var services = ConfigureServices();
             var provider = services.BuildServiceProvider();
 
+            var cmdline = string.Join(' ', args);
+            var parser = CommandGrammar.Source;
+
+            var userRequestedInteractive = CommandLineArgumentsGrammar.Interactive.TryParse(cmdline);
+
+            var runInteractive = INTERACTIVE_DEFAULT || userRequestedInteractive.WasSuccessful;
+
+            if (runInteractive)
+            {
+                InteractiveMode(provider);
+            }
+            else
+            {
+                var command = parser.Parse(cmdline);
+
+                HandleCommand(provider, command);
+            }
+        }
+
+        private static void InteractiveMode(ServiceProvider provider)
+        {
             var parser = CommandGrammar.Source;
 
             string line;
@@ -27,13 +51,13 @@ namespace TodoParser
                 {
                     try
                     {
-                        var result = parser.Parse(line);
+                        var command = parser.Parse(line);
 
                         Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.WriteLine(result);
+                        Console.WriteLine(command);
 
                         Console.ResetColor();
-                        HandleCommand(provider, result);
+                        HandleCommand(provider, command);
                     }
                     catch (Exception ex)
                     {
@@ -68,7 +92,8 @@ namespace TodoParser
             switch (command)
             {
                 case ReadCommand read:
-                    provider.GetRequiredService<IHandler<ReadCommand>>().Run(read);
+                    var handler = provider.GetRequiredService<IHandler<ReadCommand>>();
+                    handler.Run(read);
                     break;
                 case DeleteCommand delete:
                     provider.GetRequiredService<IHandler<DeleteCommand>>().Run(delete);

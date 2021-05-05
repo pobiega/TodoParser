@@ -5,6 +5,8 @@ namespace TodoParser.Parsing
 {
     public static class CommandGrammar
     {
+       
+
         private static readonly Parser<string> _keywordAdd =
             Parse.IgnoreCase("add").Text();
 
@@ -35,6 +37,12 @@ namespace TodoParser.Parsing
             from keyword in _keywordDelete
             select new DeleteCommand(id);
 
+        private static readonly Parser<Command> _toplevelDeleteCommand =
+            from keyword in _keywordDelete
+            from _ in Parse.WhiteSpace
+            from id in _number
+            select new DeleteCommand(id);
+
         private static readonly Parser<Command> _doneCommand =
             from id in _number
             from _ in Parse.WhiteSpace
@@ -43,6 +51,7 @@ namespace TodoParser.Parsing
 
         public static readonly Parser<Command> Source =
             _deleteCommand
+            .Or(_toplevelDeleteCommand)
             .Or(_doneCommand)
             .Or(_readCommand)
             .Or(_addCommand)
